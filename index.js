@@ -9,12 +9,11 @@ config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+mongoConnect();
 app.use(express.json());
 // Cors config pending
 app.use(cors());
 app.use("/feedback", rootRouter);
-
-mongoConnect();
 
 app.get("/test", (req, res) => {
     try {

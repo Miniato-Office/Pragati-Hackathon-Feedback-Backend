@@ -1,6 +1,5 @@
 import { Schema, model } from "mongoose";
-import { currentDate } from "../utils/currentTimeStamp";
-import { createError, errorHandler } from "../utils/errorHandler.js";
+import { currentDate } from "../utils/currentTimeStamp.js";
 
 const subSchema = new Schema({
     starRating: {
@@ -39,9 +38,29 @@ const feedbackStructure = new Schema({
 const feedbackModel = model("feedback", feedbackStructure);
 
 export const storeFeedbackInDB = async ({ feedbackContent, userUniqueId }) => {
-    // validation pending
+    const userExists = await findFeedbackInDB({ userUniqueId });
+    if (userExists.status) {
+        const updatedFeedback = await feedbackModel.updateOne(
+            { userUniqueId },
+            { $push: { feedbackContent: feedbackContent } }
+        );
+        console.log("updatedFeedback: ", updatedFeedback);
+        return updatedFeedback;
+    } else {
+        const createdFeedback = await feedbackModel.create({
+            userUniqueId,
+            feedbackContent: [feedbackContent],
+        });
+        console.log("createdFeedback: ", createdFeedback);
+        return createdFeedback;
+    }
 };
 
 export const findFeedbackInDB = async ({ userUniqueId }) => {
-    // validation pending
+    const userExists = await feedbackModel.find({ userUniqueId });
+    console.log("User exists: ", userExists);
+    if (userExists.length) {
+        return { status: true, data: userExists };
+    }
+    return { status: false, data: null };
 };
